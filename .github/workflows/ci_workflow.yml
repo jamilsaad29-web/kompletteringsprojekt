@@ -1,0 +1,27 @@
+name: Build and Run Test Application Workflow
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # (scheduled - once per day at midnight)
+  pull_request: # (for every push to Pull Request)
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:  # (to start the workflow manually)
+
+jobs:
+  build_project:
+    name: Build Project
+    uses: ./.github/workflows/build_esp_app.yml
+  test_in_wokwi:
+    name: Test Project (Wokwi Simulation)
+    uses: ./.github/workflows/test_in_wokwi.yml
+    needs: build_project
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    secrets:
+      WOKWI_CLI_TOKEN: ${{ secrets.WOKWI_CLI_TOKEN }}
+  build_firmware_artifact:
+    name: Build ESP32-C6 Firmware Artifact
+    uses: ./.github/workflows/build_firmware_artifact.yml
+    needs: test_in_wokwi
