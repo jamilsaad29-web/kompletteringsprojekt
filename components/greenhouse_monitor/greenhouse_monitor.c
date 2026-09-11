@@ -65,6 +65,28 @@ greenhouse_soil_status_t greenhouse_soil_status(int soil_moisture_percent)
     return GREENHOUSE_SOIL_OK;
 }
 
+greenhouse_temperature_status_t greenhouse_temperature_status(int temperature_c)
+{
+    if (temperature_c < GREENHOUSE_MIN_TEMP_C ||
+        temperature_c > GREENHOUSE_MAX_TEMP_C) {
+        return GREENHOUSE_TEMPERATURE_INVALID;
+    }
+
+    if (temperature_c < 15) {
+        return GREENHOUSE_TEMPERATURE_LOW;
+    }
+
+    if (temperature_c <= 27) {
+        return GREENHOUSE_TEMPERATURE_OK;
+    }
+
+    if (temperature_c <= 34) {
+        return GREENHOUSE_TEMPERATURE_HIGH;
+    }
+
+    return GREENHOUSE_TEMPERATURE_CRITICAL;
+}
+
 greenhouse_action_t greenhouse_decide_action(greenhouse_reading_t reading)
 {
     if (!greenhouse_reading_is_valid(reading)) {

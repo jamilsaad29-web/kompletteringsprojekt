@@ -19,6 +19,33 @@ TEST_CASE("soil status rejects impossible moisture values", "[greenhouse_monitor
     TEST_ASSERT_EQUAL(GREENHOUSE_SOIL_INVALID, greenhouse_soil_status(101));
 }
 
+TEST_CASE("temperature status classifies low and normal temperatures", "[greenhouse_monitor]")
+{
+    TEST_ASSERT_EQUAL(GREENHOUSE_TEMPERATURE_LOW,
+                      greenhouse_temperature_status(10));
+
+    TEST_ASSERT_EQUAL(GREENHOUSE_TEMPERATURE_OK,
+                      greenhouse_temperature_status(22));
+}
+
+TEST_CASE("temperature status classifies high and critical temperatures", "[greenhouse_monitor]")
+{
+    TEST_ASSERT_EQUAL(GREENHOUSE_TEMPERATURE_HIGH,
+                      greenhouse_temperature_status(28));
+
+    TEST_ASSERT_EQUAL(GREENHOUSE_TEMPERATURE_CRITICAL,
+                      greenhouse_temperature_status(35));
+}
+
+TEST_CASE("temperature status rejects invalid temperatures", "[greenhouse_monitor]")
+{
+    TEST_ASSERT_EQUAL(GREENHOUSE_TEMPERATURE_INVALID,
+                      greenhouse_temperature_status(-41));
+
+    TEST_ASSERT_EQUAL(GREENHOUSE_TEMPERATURE_INVALID,
+                      greenhouse_temperature_status(86));
+}
+
 TEST_CASE("reading validation accepts realistic sensor readings", "[greenhouse_monitor]")
 {
     greenhouse_reading_t reading = {
@@ -90,10 +117,13 @@ TEST_CASE("monitor update reads adc sensors and decides action", "[greenhouse_mo
     fake_adc_temperature_sensor_t temperature_fake;
     fake_adc_moisture_sensor_init(&moisture_fake);
     fake_adc_temperature_sensor_init(&temperature_fake);
+
     const int moisture_values[] = {819};
     const int temperature_values[] = {2079};
+
     fake_adc_moisture_sensor_set_read_values(&moisture_fake, moisture_values, 1);
     fake_adc_temperature_sensor_set_read_values(&temperature_fake, temperature_values, 1);
+
     adc_hal_t moisture_hal = fake_adc_moisture_sensor_as_adc_hal(&moisture_fake);
     adc_hal_t temperature_hal = fake_adc_temperature_sensor_as_adc_hal(&temperature_fake);
 
@@ -113,7 +143,9 @@ TEST_CASE("monitor update raises alarm when moisture adc read fails", "[greenhou
     fake_adc_temperature_sensor_t temperature_fake;
     fake_adc_moisture_sensor_init(&moisture_fake);
     fake_adc_temperature_sensor_init(&temperature_fake);
+
     fake_adc_moisture_sensor_set_read_error(&moisture_fake, ESP_ERR_TIMEOUT);
+
     adc_hal_t moisture_hal = fake_adc_moisture_sensor_as_adc_hal(&moisture_fake);
     adc_hal_t temperature_hal = fake_adc_temperature_sensor_as_adc_hal(&temperature_fake);
 
@@ -129,9 +161,12 @@ TEST_CASE("monitor update raises alarm when temperature adc read fails", "[green
     fake_adc_temperature_sensor_t temperature_fake;
     fake_adc_moisture_sensor_init(&moisture_fake);
     fake_adc_temperature_sensor_init(&temperature_fake);
+
     const int moisture_values[] = {2047};
+
     fake_adc_moisture_sensor_set_read_values(&moisture_fake, moisture_values, 1);
     fake_adc_temperature_sensor_set_read_error(&temperature_fake, ESP_ERR_TIMEOUT);
+
     adc_hal_t moisture_hal = fake_adc_moisture_sensor_as_adc_hal(&moisture_fake);
     adc_hal_t temperature_hal = fake_adc_temperature_sensor_as_adc_hal(&temperature_fake);
 
