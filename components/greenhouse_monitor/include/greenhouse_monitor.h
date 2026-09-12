@@ -42,6 +42,7 @@ greenhouse_monitor_result_t greenhouse_monitor_update(const adc_hal_t *moisture_
         const adc_hal_t *temperature_sensor_hal);
 greenhouse_soil_status_t greenhouse_soil_status(int soil_moisture_percent);
 greenhouse_temperature_status_t greenhouse_temperature_status(int temperature_c);
+bool greenhouse_should_water(greenhouse_reading_t reading);
 greenhouse_action_t greenhouse_decide_action(greenhouse_reading_t reading);
 const char *greenhouse_action_to_string(greenhouse_action_t action);
 const char *greenhouse_soil_status_to_string(greenhouse_soil_status_t status);

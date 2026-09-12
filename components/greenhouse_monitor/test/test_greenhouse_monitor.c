@@ -46,6 +46,36 @@ TEST_CASE("temperature status rejects invalid temperatures", "[greenhouse_monito
                       greenhouse_temperature_status(86));
 }
 
+TEST_CASE("should water returns true for dry soil", "[greenhouse_monitor]")
+{
+    greenhouse_reading_t reading = {
+        .temperature_c = 22,
+        .soil_moisture_percent = 20,
+    };
+
+    TEST_ASSERT_TRUE(greenhouse_should_water(reading));
+}
+
+TEST_CASE("should water returns false when soil is not dry", "[greenhouse_monitor]")
+{
+    greenhouse_reading_t reading = {
+        .temperature_c = 22,
+        .soil_moisture_percent = 50,
+    };
+
+    TEST_ASSERT_FALSE(greenhouse_should_water(reading));
+}
+
+TEST_CASE("should water returns false for invalid reading", "[greenhouse_monitor]")
+{
+    greenhouse_reading_t reading = {
+        .temperature_c = 22,
+        .soil_moisture_percent = -1,
+    };
+
+    TEST_ASSERT_FALSE(greenhouse_should_water(reading));
+}
+
 TEST_CASE("reading validation accepts realistic sensor readings", "[greenhouse_monitor]")
 {
     greenhouse_reading_t reading = {
