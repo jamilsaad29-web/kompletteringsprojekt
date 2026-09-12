@@ -87,6 +87,16 @@ greenhouse_temperature_status_t greenhouse_temperature_status(int temperature_c)
     return GREENHOUSE_TEMPERATURE_CRITICAL;
 }
 
+bool greenhouse_should_water(greenhouse_reading_t reading)
+{
+    if (!greenhouse_reading_is_valid(reading)) {
+        return false;
+    }
+
+    return greenhouse_soil_status(reading.soil_moisture_percent) ==
+           GREENHOUSE_SOIL_DRY;
+}
+
 greenhouse_action_t greenhouse_decide_action(greenhouse_reading_t reading)
 {
     if (!greenhouse_reading_is_valid(reading)) {
