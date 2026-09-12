@@ -45,13 +45,17 @@ Följande aktiviteter planerades:
 
 Jag valde att arbeta med `greenhouse_temperature_status()` och `greenhouse_should_water()` eftersom de är tydliga logiska funktioner som kan testas oberoende av fysisk hårdvara.
 
+Målet var att stegvis utveckla den befintliga lösningen och efter varje del kontrollera att projektet fortfarande kunde byggas och integreras.
+
 ## 4. Genomförande
 
-### Del 1 – Temperaturstatus
+### Vecka 1 – Projektstart och temperaturstatus
 
-Den första delen var implementationen av `greenhouse_temperature_status()`.
+Under den första veckan började jag med att gå igenom projektets struktur, uppgiftens krav och de befintliga testerna. Utvecklingsmiljön konfigurerades med ESP-IDF 6.0.3 och projektet byggdes för att kontrollera att miljön fungerade.
 
-Funktionen klassificerar temperatur enligt följande:
+Därefter implementerades `greenhouse_temperature_status()`.
+
+Funktionen klassificerar temperaturen enligt följande:
 
 - Under -40 °C eller över 85 °C: `INVALID`
 - Under 15 °C: `LOW`
@@ -61,18 +65,13 @@ Funktionen klassificerar temperatur enligt följande:
 
 Tre enhetstester skapades för att kontrollera låga och normala temperaturer, höga och kritiska temperaturer samt ogiltiga temperaturvärden.
 
-Arbetet gjordes i branchen `feature/temperature-status` och mergades till `main` genom en Pull Request.
+Arbetet genomfördes i branchen `feature/temperature-status`. Testapplikationen byggdes och ändringarna pushades därefter till GitHub. En Pull Request skapades och ändringarna integrerades till `main`.
 
-### Del 2 – Bevattningslogik
+### Vecka 2 – Bevattningslogik, CI och slutförande
 
-Den andra delen var implementationen av `greenhouse_should_water()`.
+Under den andra veckan implementerades `greenhouse_should_water()`.
 
-Funktionen returnerar `true` när:
-
-- mätvärdet är giltigt
-- markfuktigheten klassificeras som torr
-
-Funktionen returnerar `false` om mätvärdet är ogiltigt eller om marken inte är torr.
+Funktionen kontrollerar först att mätvärdet är giltigt. Om mätvärdet är ogiltigt returneras `false`. Om mätvärdet är giltigt används `greenhouse_soil_status()` för att kontrollera markfuktigheten. Funktionen returnerar `true` endast när marken klassificeras som torr.
 
 Tre enhetstester skapades:
 
@@ -80,15 +79,36 @@ Tre enhetstester skapades:
 - mark som inte är torr returnerar `false`
 - ogiltigt mätvärde returnerar `false`
 
-Arbetet gjordes i branchen `feature/should-water` och mergades därefter till `main` genom en Pull Request.
+Arbetet genomfördes i branchen `feature/should-water`. Testapplikationen byggdes lokalt med ESP-IDF 6.0.3 och därefter pushades ändringarna till GitHub.
+
+En Pull Request skapades och GitHub Actions användes för att kontrollera ändringarna innan de mergades till `main`.
+
+Den sista delen av arbetet bestod av att konfigurera och verifiera projektets fullständiga CI-flöde. En Wokwi CI-token lades till som en GitHub Repository Secret och hela GitHub Actions-workflowet kördes på `main`.
+
+Slutresultatet blev att projektet byggdes korrekt och samtliga 32 tester godkändes i Wokwi.
 
 ## 5. Planerat jämfört med genomfört
 
 Den ursprungliga planen var att implementera två av de funktioner som angavs i uppgiften och skriva 2–3 tester per funktion.
 
-Detta genomfördes enligt plan.
+Det planerade arbetet genomfördes:
 
-Under arbetet behövde även utvecklingsmiljön konfigureras för ESP-IDF 6.0. Projektet byggdes lokalt med ESP-IDF 6.0.3.
+| Planerat arbete | Resultat |
+|---|---|
+| Konfigurera utvecklingsmiljön | Genomfört |
+| Undersöka befintlig kod och tester | Genomfört |
+| Implementera temperaturstatus | Genomfört |
+| Skriva 2–3 tester för temperaturstatus | 3 tester skapades |
+| Implementera bevattningslogik | Genomfört |
+| Skriva 2–3 tester för bevattningslogik | 3 tester skapades |
+| Kontrollera befintliga soil-status-tester | Genomfört |
+| Bygga testapplikationen lokalt | Genomfört |
+| Arbeta med feature-branches | Genomfört |
+| Använda Pull Requests | Genomfört |
+| Verifiera projektet med CI | Genomfört |
+| Köra tester i Wokwi | 32 av 32 godkända |
+
+Under arbetet behövde utvecklingsmiljön konfigureras för ESP-IDF 6.0. Projektet byggdes lokalt med ESP-IDF 6.0.3.
 
 GitHub Actions aktiverades även i det forkade repositoryt. För att kunna köra Wokwi-simuleringen behövde en Wokwi CI-token konfigureras som en GitHub Repository Secret.
 
@@ -108,11 +128,13 @@ MVP:n utvecklades stegvis:
 
 **MVP 4:** Projektet verifierades genom hela CI-flödet med bygge, Wokwi-simulering och firmwarebygge.
 
+På detta sätt utvecklades lösningen stegvis i stället för att alla förändringar gjordes samtidigt.
+
 ## 7. Testning
 
 Projektet använder Unity för enhetstester och en separat ESP-IDF-testapplikation i `test_app`.
 
-För de två implementerade funktionerna skapades totalt sex nya testfall.
+För de två funktioner som jag implementerade skapades totalt sex nya testfall.
 
 De befintliga testerna för `greenhouse_soil_status()` kontrollerar bland annat gränsvärden för torr, normal och våt mark samt ogiltiga fuktvärden.
 
@@ -134,6 +156,8 @@ De befintliga testerna för `greenhouse_soil_status()` kontrollerar bland annat 
 | `greenhouse_soil_status()` | 71 och 100 % | WET |
 | `greenhouse_soil_status()` | -1 och 101 % | INVALID |
 
+De två nya funktionerna arbetar med redan tillgängliga värden och behöver därför inte direkt använda projektets fake ADC-komponenter. Fake ADC-komponenterna används däremot av projektets befintliga tester för sensoravläsning.
+
 ## 8. CI och GitHub Actions
 
 Projektet använder GitHub Actions för automatisk verifiering.
@@ -144,8 +168,6 @@ CI-flödet består av:
 - körning av tester i Wokwi-simulering
 - publicering av testresultat
 - bygge av ESP32-C6 firmware
-
-Pre-commit-kontrollen användes även i samband med Pull Requests.
 
 Efter att Wokwi CI hade konfigurerats genomfördes hela workflowet på `main`.
 
@@ -161,16 +183,22 @@ Det visar att den slutliga versionen både kunde byggas och klara projektets aut
 
 ## 9. Problem och lösningar
 
-Ett problem under arbetet var att Wokwi-testningen först misslyckades eftersom `WOKWI_CLI_TOKEN` saknades.
+Under projektet uppstod några problem som behövde lösas.
+
+Ett problem var att Wokwi-testningen först inte kunde starta eftersom `WOKWI_CLI_TOKEN` saknades.
 
 Problemet löstes genom att skapa en Wokwi CI-token och lägga till den som en Repository Secret i GitHub.
 
 Efter detta kördes hela CI-workflowet igen och samtliga 32 tester blev godkända.
 
+Arbetet med separata feature-branches gjorde det också möjligt att kontrollera förändringar innan de integrerades i `main`.
+
 ## 10. Slutsats
 
 Projektets mål uppnåddes genom att två av de efterfrågade funktionerna implementerades och testades.
 
-Arbetet delades upp i feature-branches och ändringarna integrerades genom Pull Requests. Detta gav ett tydligt arbetsflöde där varje del kunde kontrolleras innan den mergades till `main`.
+Totalt skapades sex nya testfall för de två implementerade funktionerna. De befintliga testerna för `greenhouse_soil_status()` behölls och ingick tillsammans med projektets övriga tester i den slutliga testkörningen.
 
-Den slutliga versionen verifierades med GitHub Actions och Wokwi, där samtliga 32 tester godkändes.
+Arbetet delades upp över två arbetsveckor och genomfördes stegvis med feature-branches och Pull Requests.
+
+Den slutliga versionen verifierades genom GitHub Actions och Wokwi. Resultatet blev 32 av 32 godkända tester och ett godkänt firmwarebygge.
